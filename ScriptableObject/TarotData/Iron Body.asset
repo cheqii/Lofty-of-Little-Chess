@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e40d63660354d9c95e0215cac0bbe34, type: 3}
+  m_Name: Iron Body
+  m_EditorClassIdentifier: 
+  EffectType: 19
+  Grade: 0
+  Class: 1
+  TarotName: Iron Body
+  TarotSprite: {fileID: 21300000, guid: 5c3f5d1426c5e3245b6118e2a7851462, type: 3}
+  Description: 'Everything is fine no bleeding no burning.
+
+
+    Bleeding and Burning
+    will not afftect to Rosso.'
+  UpgradeType: 1
+  UpgradeHp: 0
+  UpgradeMaxHp: 0
+  UpgradeYellowHeart: 0
+  UpgradeHealMultiple: 0
+  UpgradeDamage: 0
+  UpgradeKnockBackRange: 0
+  UpgradeTempDamage: 0
+  UpgradeSpeed: 0
+  UpgradeActionPoint: 1
+  UpgradeFlameSoulMultiple: 0
+  UpgradeCoinMultiple: 0
+  TarotSkill: 0
+  DebuffNoEffect: 1
+  debuffTypes: 0200000003000000
+  IsRandomCard: 0
+  RandomByGrade: 0
+  RandomByClass: 0
+  RandomGrade: 0
+  RandomClass: 0

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f548e1040c92db4eb42577d6b04c8be, type: 3}
+  m_Name: Rosso
+  m_EditorClassIdentifier: 
+  Name: Rosso
+  Sprite: {fileID: 850455181, guid: 8dca84db09f95144d802bcfa13a0adad, type: 3}
+  MovePattern: 5
+  AttackPattern: 1
+  MaxHealth: 4
+  MaxActionPoint: 2
+  Damage: 1
+  MoveSpeed: 4
+  TurnSpeed: 100

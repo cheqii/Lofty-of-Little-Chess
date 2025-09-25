@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e40d63660354d9c95e0215cac0bbe34, type: 3}
+  m_Name: The Lost Feather
+  m_EditorClassIdentifier: 
+  EffectType: 7
+  Grade: 1
+  Class: 3
+  TarotName: The Lost Feather
+  TarotSprite: {fileID: 21300000, guid: 765bf9aae02715f478b41e32f810d5c0, type: 3}
+  Description: 'My turn is a little longer?
+
+
+    Rosso gain more 1 <color=cyan>action
+    points</color>.'
+  UpgradeType: 0
+  UpgradeHp: 0
+  UpgradeMaxHp: 0
+  UpgradeYellowHeart: 0
+  UpgradeHealMultiple: 0
+  UpgradeDamage: 0
+  UpgradeKnockBackRange: 0
+  UpgradeTempDamage: 0
+  UpgradeSpeed: 0
+  UpgradeActionPoint: 1
+  UpgradeFlameSoulMultiple: 0
+  UpgradeCoinMultiple: 0
+  TarotSkill: 0
+  DebuffNoEffect: 0
+  debuffTypes: 
+  IsRandomCard: 0
+  RandomByGrade: 0
+  RandomByClass: 0
+  RandomGrade: 0
+  RandomClass: 0

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e40d63660354d9c95e0215cac0bbe34, type: 3}
+  m_Name: Motivation
+  m_EditorClassIdentifier: 
+  EffectType: 11
+  Grade: 1
+  Class: 1
+  TarotName: Motivation
+  TarotSprite: {fileID: 21300000, guid: 6418e254035376b4a872ae7a2fd3f150, type: 3}
+  Description: 'Well sometimes somebody want motivation to fight... Let''s get it!
+
+
+    When
+    Rosso get <color=green>healing</color>, Rosso got 1 more <color=green>heal</color>!'
+  UpgradeType: 0
+  UpgradeHp: 0
+  UpgradeMaxHp: 0
+  UpgradeYellowHeart: 0
+  UpgradeHealMultiple: 1
+  UpgradeDamage: 0
+  UpgradeKnockBackRange: 0
+  UpgradeTempDamage: 0
+  UpgradeSpeed: 0
+  UpgradeActionPoint: 0
+  UpgradeFlameSoulMultiple: 0
+  UpgradeCoinMultiple: 0
+  DeactivatedTrap: 0
+  IsRandomCard: 0
+  IsRandomByGrade: 0
+  IsRandomByClass: 0
+  RandomGrade: 0
+  RandomClass: 0
+  DebuffNoEffect: 0
+  debuffTypes: 

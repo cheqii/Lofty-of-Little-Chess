@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e40d63660354d9c95e0215cac0bbe34, type: 3}
+  m_Name: LastChance
+  m_EditorClassIdentifier: 
+  EffectType: 20
+  Grade: 0
+  Class: 0
+  TarotName: Last Chance
+  TarotSprite: {fileID: 21300000, guid: dbb2cf8adacf45740a6f864c0d9ac5d6, type: 3}
+  Description: 'Phew, luckily i have a planned B
+
+
+    Rosso can <color=magenta>random
+    tarot card again</color> with no cost'
+  UpgradeType: 1
+  UpgradeHp: 0
+  UpgradeMaxHp: 0
+  UpgradeYellowHeart: 0
+  UpgradeHealMultiple: 0
+  UpgradeDamage: 0
+  UpgradeKnockBackRange: 0
+  UpgradeTempDamage: 0
+  UpgradeSpeed: 0
+  UpgradeActionPoint: 0
+  UpgradeFlameSoulMultiple: 0
+  UpgradeCoinMultiple: 0
+  TarotSkill: 0
+  DebuffNoEffect: 0
+  debuffTypes: 
+  IsRandomCard: 1
+  RandomByGrade: 1
+  RandomByClass: 0
+  RandomGrade: 3
+  RandomClass: 0

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e40d63660354d9c95e0215cac0bbe34, type: 3}
+  m_Name: Death's Door
+  m_EditorClassIdentifier: 
+  EffectType: 12
+  Grade: 2
+  Class: 1
+  TarotName: Death's Door
+  TarotSprite: {fileID: 21300000, guid: 3cbfe1d701bc28044b1c295dfb9d2514, type: 3}
+  Description: 'I''m come back from the death!
+
+
+    After Rosso get killing, Rosso
+    will come back to life <color=red>with 1 health and then this card will disappear</color>.'
+  UpgradeType: 1
+  UpgradeHp: 0
+  UpgradeMaxHp: 0
+  UpgradeYellowHeart: 0
+  UpgradeHealMultiple: 0
+  UpgradeDamage: 0
+  UpgradeKnockBackRange: 0
+  UpgradeTempDamage: 0
+  UpgradeSpeed: 0
+  UpgradeActionPoint: 0
+  UpgradeFlameSoulMultiple: 0
+  UpgradeCoinMultiple: 0
+  TarotSkill: 2
+  DebuffNoEffect: 0
+  debuffTypes: 
+  IsRandomCard: 0
+  RandomByGrade: 0
+  RandomByClass: 0
+  RandomGrade: 0
+  RandomClass: 0
