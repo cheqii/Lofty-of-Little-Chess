@@ -1,0 +1,461 @@
+Room Generation System Documentation 📒
+
+This document describes the main classes involved in the room generation system: RoomGenerator, RoomManager, and RoomLogicHelpers.
+
+## System Overview
+The Room Generation System is a grid-based procedural room generation system designed for Unity games. It creates interconnected rooms with proper spacing, door placement, and fallback mechanisms to handle blocking scenarios.
+
+**Core Components:**
+- **RoomGenerator**: Orchestrates the room generation process and high-level flow.
+- **RoomManager**: Manages room data, block positions, and room relationships.
+- **RoomLogicHelpers**: Provides utility algorithms for room placement, pathfinding, and block checks.
+
+---
+
+## 1. RoomGenerator Class
+
+**Purpose:** Main MonoBehaviour responsible for generating, placing, and managing rooms in the game grid.
+
+**Inheritance:** `Singleton<RoomGenerator>` - Ensures only one instance exists in the scene.
+
+### Key Responsibilities:
+- Initializes the room grid and manages room placement
+- Determines valid spawn positions for new rooms using directional algorithms
+- Handles the logic for moving to new rooms and fallback when blocked
+- Spawns room gates (doors) between connected rooms
+- Provides editor visualization for the grid, rooms, and connections
+- Manages object pooling for rooms and doors
+
+### Important Fields:
+
+#### Grid Configuration:
+- `roomGridSize` (int): Size of each room cell in the grid
+- `gridCountX`, `gridCountZ` (int): Grid dimensions for room placement boundaries
+- `offset` (Vector3): Grid positioning offset calculated from GridManager
+
+#### Room Generation Settings:
+- `roomPrefab` (GameObject): Prefab used to instantiate rooms
+- `doorPrefab` (GameObject): Prefab used for doors/gates between rooms
+- `minRooms`, `maxRooms` (int): Range for random room count generation
+- `maxRoomGenerateLoops` (int): Safety limit to prevent infinite generation loops
+
+#### Room Movement Logic:
+- `defaultRoomMoveOnRate` (float): Base probability for switching to a new room as generation target
+- `increaseRoomMoveOnRate` (float): Rate increase when movement fails
+- `roomMoveOnRate` (float): Current dynamic probability for room switching
+
+#### Room Management:
+- `roomManager` (RoomManager): Core manager handling room data and positioning logic
+- `startRoom` (Room): Reference to the first room generated (entry point)
+- `tempRoom` (Room): Current target room for generating neighbors
+- `roomParent` (Transform): Parent transform for organizing room GameObjects
+
+#### Room Data:
+- `standbyRoomData` (RoomTypeData): Data for the starting room
+- `roomSpawnListData` (List<RoomInfo>): Available room types with spawn rates
+
+### Key Methods:
+
+#### Core Generation:
+- **`GenerateRoom()`**: Main entry point that orchestrates the entire room generation process
+  - Generates a random number of rooms between minRooms and maxRooms
+  - Uses a retry loop with maxRoomGenerateLoops safety limit
+  - Creates rooms using object pooling
+  - Connects rooms and spawns doors after all rooms are generated
+
+- **`ClearRoom()`**: Resets the generator state and cleans up generated rooms
+  - Nullifies startRoom and tempRoom references
+  - Calls roomManager.ClearRoomData() to clear all room data
+  - Prepares system for new generation
+
+#### Position Calculation:
+- **`GetPositionGridIndex(Vector3Int gridIndex)`**: Converts grid coordinates to world positions
+  - Takes grid index and calculates world position based on roomGridSize
+  - Centers position relative to grid dimensions
+
+- **`GetRoomSpawnPositions(int directionIndex)`**: Determines spawn position for new rooms
+  - Returns center position for the first room
+  - For subsequent rooms, calculates position relative to tempRoom using direction vectors
+
+#### Room Placement Logic:
+- **`FindRoomPosition(out Vector3 targetPosition)`**: Advanced position finding with fallback support
+  - Checks if current tempRoom is fully blocked using RoomLogicHelpers
+  - If blocked, attempts to find fallback path through connected rooms
+  - Shuffles direction order for randomization
+  - Removes soft blocks when using fallback positions
+
+#### Door/Gate Management:
+- **`CreateRoomGate(Room targetRoom)`**: Creates doors between connected rooms
+  - Iterates through all room neighbors
+  - Calculates door positions using roomManager.GetDoorSpawnPosition()
+  - Uses object pooling to spawn door prefabs
+  - Sets up gate logic and unlocks doors for start room
+
+#### Target Room Management:
+- **`TargetSpawningMoveOn(ref Room targetRoom, Room newRoom)`**: Manages room generation focus
+  - Uses probability system to decide whether to switch generation target
+  - Considers multiple factors: random rate, room blocking, neighbor count
+  - Applies soft blocking to previous room and its neighbors when switching
+  - Implements dynamic rate adjustment for smoother generation
+
+### Editor Features:
+- **OnDrawGizmos()**: Comprehensive visual debugging in Scene view
+  - Yellow wireframe cubes show the grid structure
+  - Green solid cubes represent actual rooms
+  - Red wireframe cubes show hard block positions (occupied spaces)
+  - Magenta wireframe cubes show soft block positions (spacing reserves)
+  - Cyan lines show connections between neighboring rooms
+
+---
+
+
+## 2. RoomManager Class
+
+**Purpose:** Manages the state of all rooms, their positions, and block status in the grid.
+
+### Key Responsibilities:
+- Tracks all rooms, hard blocks (occupied), and soft blocks (reserved for spacing)
+- Provides direction vectors and mapping for room placement
+- Assigns new rooms, connects neighbors, and manages room data
+- Checks for blocked positions and manages soft/hard block logic
+- Calculates door spawn positions between rooms
+
+### Important Fields:
+
+#### Core Data Structures:
+- `allRooms` (List<Room>): List of all generated rooms in the system
+- `hardBlockPositions` (Dictionary<Vector3Int, Room>): Dictionary of occupied grid positions mapped to rooms
+- `softBlockPositions` (Dictionary<Vector3Int, Room>): Dictionary of reserved grid positions for spacing
+- `startRoom` (Room): Reference to the first generated room
+- `roomGridSize` (int): Size of each room cell in the grid
+
+#### Direction System:
+- `roomSpawnDirections` (List<Vector3Int>): List of possible direction vectors for room placement
+  - Front: (0, 0, roomGridSize)
+  - Back: (0, 0, -roomGridSize)
+  - Left: (-roomGridSize, 0, 0)
+  - Right: (roomGridSize, 0, 0)
+
+- `roomDirections` (Dictionary<Vector3Int, RoomDirection>): Maps direction vectors to logical directions
+  - Used for determining door placement orientation
+
+### Key Methods:
+
+#### Room Assignment and Connection:
+- **`AssignRoom(ref Room startRoom, ref Room previousRoom, Room latestRoom)`**: Core room assignment method
+  - Adds new room to AllRooms list
+  - Adds room position to HardBlockPositions dictionary
+  - Sets startRoom if it's the first room
+  - Calls ConnectRoom to establish neighbor relationships
+
+- **`ConnectRoom(Room latestRoom, Room previousRoom)`**: Establishes bidirectional neighbor relationships
+  - Sets BasedRoom reference for the new room
+  - Adds rooms to each other's Neighbor lists
+  - Ensures no duplicate connections
+
+- **`SetRoomData(Room targetRoom, RoomTypeData standbyRoomData, List<RoomInfo> roomTypeListData)`**: Assigns room type data
+  - Uses standbyRoomData for the start room
+  - For other rooms, randomly selects from roomTypeListData based on spawn rates
+  - Calls targetRoom.InitRoom() with selected data
+
+#### Position and Block Management:
+- **`IsPositionContains(Vector3 blockedPosition)`**: Checks if a position is blocked
+  - Returns true if position exists in either HardBlockPositions or SoftBlockPositions
+  - Uses Vector3Int.FloorToInt for grid alignment
+
+- **`SoftBlockAroundRoomPosition(Room room)`**: Creates spacing around a room
+  - Iterates through all RoomSpawnDirections
+  - Adds soft blocks in all directions around the room
+  - Skips positions that already have hard blocks
+  - Prevents rooms from being placed too close together
+
+- **`IsPositionHaveBlocked(Vector3 targetPosition, Room baseRoom, BlockType blockType)`**: Advanced blocking check
+  - Checks all directions around a target position
+  - Supports both HardBlock and SoftBlock checking
+  - Excludes the base room from blocking calculations
+  - Returns true if any surrounding position is blocked
+
+#### Door Position Calculation:
+- **`GetDoorSpawnPosition(Room targetRoom, Vector3 neighborPosition, out Vector3 doorPosition)`**: Calculates door placement
+  - Uses RoomDirections dictionary to determine orientation
+  - Calculates local position within room based on room size
+  - Returns different positions based on direction:
+    - Front: (roomSize/2, 0, roomSize-1)
+    - Back: (roomSize/2, 0, 0)
+    - Left: (0, 0, roomSize/2-1)
+    - Right: (roomSize-1, 0, roomSize/2-1)
+
+#### Cleanup:
+- **`ClearRoomData()`**: Resets all manager state
+  - Calls ResetRoom() on all rooms
+  - Clears AllRooms, HardBlockPositions, and SoftBlockPositions
+  - Nullifies startRoom reference
+
+### Enums:
+- **`BlockType`**: Defines types of position blocking
+  - `HardBlock`: Actual room positions (cannot be overridden)
+  - `SoftBlock`: Spacing reservations (can be removed for fallback)
+
+- **`RoomDirection`**: Logical direction mapping
+  - `None, Front, Back, Left, Right`: Used for door placement logic
+
+---
+
+## 3. RoomLogicHelpers Class
+
+**Purpose:** Provides static helper methods for advanced room logic, such as checking for blocked rooms and finding fallback paths.
+
+### Key Responsibilities:
+- Determines if a room is fully blocked in all directions
+- Finds fallback paths for room placement when current room is blocked
+- Provides utility algorithms for complex room placement scenarios
+
+### Important Methods:
+
+#### Blocking Detection:
+- **`IsRoomFullyBlocked(Room room, RoomManager manager)`**: Comprehensive blocking check
+  - Checks all four directions around a room for blocks
+  - Returns true if ALL positions around the room are blocked by hard or soft blocks
+  - Returns false if ANY position is available for placement
+  - Used to determine when fallback logic is needed
+
+#### Fallback Path Finding:
+- **`GetFallbackRoomPath(ref Room tempRoom, RoomManager manager, out Vector3 fallbackPosition)`**: Advanced fallback algorithm
+  - **Input Parameters:**
+    - `tempRoom` (ref): Current room that is blocked - will be updated to new fallback room
+    - `manager`: RoomManager instance for accessing room data and block positions
+    - `fallbackPosition` (out): Returns the valid position found for placing next room
+  
+  - **Algorithm Steps:**
+    1. Stores reference to old blocked room
+    2. Falls back to the based room (parent room in generation tree)
+    3. Iterates through all neighbors of the based room
+    4. For each neighbor, checks all four directions for valid placement
+    5. Validates that position is:
+       - Not a hard block
+       - Not blocked by surrounding hard blocks
+       - Not blocked by surrounding soft blocks
+       - A valid soft block belonging to the neighbor room
+    6. Updates tempRoom reference to the valid neighbor
+    7. Returns the first valid fallback position found
+
+  - **Return Value:**
+    - `true`: Valid fallback path found, tempRoom updated, fallbackPosition set
+    - `false`: No valid fallback found, generation may need to retry or stop
+
+### Usage in Generation Flow:
+
+1. **RoomGenerator.FindRoomPosition()** calls `IsRoomFullyBlocked()`
+2. If room is blocked, calls `GetFallbackRoomPath()` to find alternative
+3. If fallback found, removes soft block at fallback position
+4. Continues generation from new fallback position
+5. If no fallback found, generation loop continues with retry logic
+
+### Error Handling:
+- Handles null room references gracefully
+- Returns false when no valid paths exist
+- Maintains system stability when generation hits dead ends
+
+---
+
+## 4. System Integration & Usage Flow
+
+### Generation Process:
+1. **Initialization**: `RoomGenerator.Start()` creates RoomManager instance
+2. **Generation Start**: `GenerateRoom()` determines random room count
+3. **Position Finding**: `FindRoomPosition()` uses RoomLogicHelpers for placement
+4. **Room Creation**: Uses object pooling to instantiate room prefabs
+5. **Room Assignment**: `RoomManager.AssignRoom()` handles data management
+6. **Connection**: `ConnectRoom()` establishes neighbor relationships
+7. **Door Creation**: `CreateRoomGate()` spawns doors between connected rooms
+
+### Fallback System:
+- **Detection**: RoomLogicHelpers identifies fully blocked rooms
+- **Path Finding**: Searches through room neighbor tree for alternatives
+- **Block Management**: Removes soft blocks to enable fallback placement
+- **Target Switching**: Updates generation target to new valid room
+
+### Block Management:
+- **Hard Blocks**: Permanent room positions that cannot be overridden
+- **Soft Blocks**: Spacing reservations that can be removed for fallback
+- **Dynamic Blocking**: Applies soft blocks around rooms when switching targets
+
+### Editor Visualization:
+- **Yellow Wireframes**: Show the overall grid structure
+- **Green Cubes**: Actual generated rooms
+- **Red Wireframes**: Hard blocked positions (occupied)
+- **Magenta Wireframes**: Soft blocked positions (spacing)
+- **Cyan Lines**: Room connections and neighbor relationships
+
+---
+
+## 5. Configuration Parameters
+
+### Grid Settings:
+- `roomGridSize`: Controls spacing between rooms and door placement calculations
+- `gridCountX/Z`: Defines the boundary limits for room generation
+- `offset`: Centers the grid relative to other game systems
+
+### Generation Constraints:
+- `minRooms/maxRooms`: Controls the range of rooms generated per session
+- `maxRoomGenerateLoops`: Safety limit to prevent infinite loops in blocked scenarios
+
+### Movement Probability:
+- `defaultRoomMoveOnRate`: Base chance to switch generation focus to new rooms
+- `increaseRoomMoveOnRate`: How much the rate increases when movement fails
+- Dynamic adjustment ensures smooth generation flow and prevents clustering
+
+### Room Data:
+- `standbyRoomData`: Special data for the starting room (entry point)
+- `roomSpawnListData`: Weighted list of room types with spawn probabilities
+
+---
+
+## 6. Performance Considerations
+
+### Object Pooling:
+- Rooms and doors use `PoolManager.Instance` for efficient memory management
+- Reduces garbage collection during generation and cleanup
+
+### Dictionary Lookups:
+- Hard and soft block positions use Dictionary<Vector3Int, Room> for O(1) lookups
+- Efficient position checking and room relationship management
+
+### Generation Limits:
+- `maxRoomGenerateLoops` prevents infinite loops in impossible scenarios
+- Early termination when no valid positions remain
+
+### Memory Management:
+- `ClearRoomData()` properly resets all references and collections
+- Room objects are pooled rather than destroyed for reuse
+
+---
+
+## 7. Troubleshooting & Common Issues
+
+### Generation Stops Early:
+- **Cause**: All valid positions blocked, maxRoomGenerateLoops reached
+- **Solution**: Increase grid size, reduce min rooms, or adjust soft blocking logic
+
+### Rooms Too Close Together:
+- **Cause**: Soft blocking not applied correctly
+- **Solution**: Check `SoftBlockAroundRoomPosition()` calls and spacing logic
+
+### Doors Not Spawning:
+- **Cause**: Door position calculation failing or room connections missing
+- **Solution**: Verify `GetDoorSpawnPosition()` logic and neighbor relationships
+
+### Fallback Not Working:
+- **Cause**: No valid neighbors or all fallback paths blocked
+- **Solution**: Ensure room tree connectivity and adjust blocking logic
+
+---
+
+## 8. Code Implementation Details
+
+### RoomGenerator Implementation Notes:
+
+#### Grid Position Calculation:
+```csharp
+// Converts grid index to world position
+private Vector3 GetPositionGridIndex(Vector3Int _gridIndex)
+{
+    var _gridX = _gridIndex.x;
+    var _gridZ = _gridIndex.y;
+    return new Vector3(roomGridSize * (_gridX - gridCountX / 2), -0.5f, roomGridSize * (_gridZ - gridCountZ / 2));
+}
+```
+
+#### Room Spawn Position Logic:
+- First room spawns at grid center: `GetPositionGridIndex(new Vector3Int(gridCountX / 2, gridCountZ / 2, 0))`
+- Subsequent rooms spawn relative to tempRoom: `tempRoom.transform.position + roomManager.RoomSpawnDirections[_directionIndex]`
+
+#### Target Room Switching Conditions:
+The system switches generation target when:
+- Random rate is below `roomMoveOnRate`
+- Current target room is null
+- Current room is fully blocked
+- Current room is the start room
+- Current room has maximum neighbors (4 directions)
+
+### RoomManager Implementation Notes:
+
+#### Direction Vector Initialization:
+```csharp
+roomSpawnDirections = new List<Vector3Int>
+{
+    new(0, 0, roomGridSize),   // Front
+    new(0, 0, -roomGridSize),  // Back
+    new(-roomGridSize, 0, 0),  // Left
+    new(roomGridSize, 0, 0)    // Right
+};
+```
+
+#### Room Data Assignment Logic:
+- Start room always uses `standbyRoomData`
+- Other rooms randomly select from `roomTypeListData` based on spawn rates
+- Uses probability system: `Random.Range(0f, 1f) <= roomInfo.SpawnRate / 100`
+
+### RoomLogicHelpers Implementation Notes:
+
+#### Fallback Path Algorithm:
+1. Falls back to the based room (parent in generation tree)
+2. Iterates through all neighbors of the based room
+3. Checks each direction around each neighbor
+4. Validates position is not hard blocked
+5. Ensures position is a valid soft block belonging to the neighbor
+6. Returns first valid position found
+
+---
+
+## 9. Dependencies and External Systems
+
+### Required Components:
+- **Singleton<T>**: Base class for RoomGenerator ensuring single instance
+- **PoolManager**: Handles object pooling for rooms and doors
+- **GridManager**: Provides grid size for offset calculations
+- **Room**: Individual room component with neighbor tracking
+- **Gate**: Door/gate component for room connections
+- **RoomTypeData**: ScriptableObject defining room properties
+- **RoomInfo**: Data structure containing room spawn rates
+
+### Unity Systems Used:
+- **Transform**: For positioning rooms and doors
+- **GameObject**: Room and door prefab instantiation
+- **Vector3/Vector3Int**: Position calculations and grid alignment
+- **Dictionary/List**: Data structure for efficient lookups
+- **Random**: Procedural generation randomization
+
+### Editor Integration:
+- **OnDrawGizmos()**: Visual debugging in Scene view
+- **[VInspector.Button]**: Custom inspector buttons for testing
+- **[SerializeField]**: Inspector field exposure
+- **[Header]**: Inspector organization
+
+---
+
+## 10. Extension Points and Customization
+
+### Adding New Room Types:
+1. Create new `RoomTypeData` ScriptableObject
+2. Add to `roomSpawnListData` with desired spawn rate
+3. Configure room size and properties in the data
+
+### Modifying Generation Patterns:
+- Adjust `defaultRoomMoveOnRate` and `increaseRoomMoveOnRate` for different clustering behaviors
+- Modify `roomSpawnDirections` to support diagonal or custom directions
+- Change grid size parameters for different spacing requirements
+
+### Custom Blocking Logic:
+- Extend `BlockType` enum for additional block types
+- Modify `IsPositionHaveBlocked()` for custom blocking rules
+- Add new methods to RoomLogicHelpers for specialized algorithms
+
+### Visual Debugging Extensions:
+- Add new Gizmo colors and shapes in `OnDrawGizmos()`
+- Create custom Scene view handles for interactive editing
+- Implement runtime visualization options
+
+---
+
+**Note:** This system is designed for robust grid-based procedural room generation with comprehensive fallback mechanisms and block avoidance for reliable level layouts.
